@@ -20,6 +20,7 @@ type Config struct {
 	InfluxOrgName    string         `yaml:"InfluxOrgName"`
 	InfluxBucketName string         `yaml:"InfluxBucketName"`
 	InfluxSkipTLS    bool           `yaml:"InfluxSkipTLS"`
+	PollingInterval  int64          `yaml:"PollingInterval"`
 	FlukeTags        map[int]CfgTag `yaml:"FlukeTags"`
 }
 

@@ -181,7 +181,12 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 	if err != nil {
 		return nil, err
 	}
-	ticker := time.NewTicker(defaultPolInterval)
+	var ticker *time.Ticker
+	if e.config.PollingInterval != 0 {
+		ticker = time.NewTicker(time.Duration(e.config.PollingInterval) * time.Second)
+	} else {
+		ticker = time.NewTicker(defaultPolInterval)
+	}
 	frameChan := make(chan *proto.Frame)
 	var writeAPI api.WriteAPI
 	if e.config.Influx {

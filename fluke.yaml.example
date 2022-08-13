@@ -4,6 +4,7 @@ InfluxAPIToken: "influx-api-token"
 InfluxOrgName: "my_influx_org"
 InfluxBucketName: "some_bucket"
 InfluxSkipTLS: False
+PollingInterval: 5 # a time in seconds. Default: 5 seconds
 FlukeTags:
   0: 
     Tag: "Scan"
