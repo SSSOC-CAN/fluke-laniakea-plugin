@@ -32,6 +32,7 @@ var (
 	flukeOPCServerHost                            = "localhost"
 	defaultPolInterval              time.Duration = 5 * time.Second
 	ErrAlreadyRecording                           = bg.Error("already recording")
+	ErrAlreadyStoppedRecording                    = bg.Error("already stopped recording")
 )
 
 type DAQConnection struct {
@@ -223,6 +224,9 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 
 // Implements the Datasource interface funciton StopRecord
 func (e *FlukeDatasource) StopRecord() error {
+	if ok := atomic.CompareAndSwapInt32(&e.recording, 1, 0); !ok {
+		return ErrAlreadyStoppedRecording
+	}
 	e.quitChan <- struct{}{}
 	return nil
 }
