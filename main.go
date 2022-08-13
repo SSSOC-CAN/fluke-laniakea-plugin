@@ -246,11 +246,11 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 									current_time,
 								)
 								// write asynchronously
-								writer.WritePoint(p)
+								writeAPI.WritePoint(p)
 							}
 						}
 					case float32:
-						data = append(data, Payload{Name: reading.Name, Value: v})
+						data = append(data, Payload{Name: reading.Name, Value: float64(v)})
 						if e.config.Influx {
 							if reading.Type != "ignore" {
 								p := influx.NewPoint(
@@ -264,7 +264,7 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 									current_time,
 								)
 								// write asynchronously
-								writer.WritePoint(p)
+								writeAPI.WritePoint(p)
 							}
 						}
 					}
