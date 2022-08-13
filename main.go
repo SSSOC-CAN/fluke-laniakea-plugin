@@ -210,6 +210,10 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 				}
 			case <-e.quitChan:
 				ticker.Stop()
+				err := e.connection.StopScanning()
+				if err != nil {
+					log.Println(err)
+				}
 				return
 			}
 		}
