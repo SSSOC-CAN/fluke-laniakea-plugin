@@ -1,0 +1,159 @@
+Influx: True
+InfluxURL: "http://127.0.0.1:8086"
+InfluxAPIToken: "influx-api-token"
+InfluxOrgName: "my_influx_org"
+InfluxBucketName: "some_bucket"
+FlukeTags:
+  0: 
+    Tag: "Scan"
+    Type: "ignore"
+  1:
+    Tag: "customer channel 1"
+    Type: "temperature"
+  2: 
+    Tag: "customer channel 2"
+    Type: "temperature"
+  3: 
+    Tag: "customer channel 3"
+    Type: "temperature"
+  4: 
+    Tag: "customer channel 4"
+    Type: "temperature"
+  5: 
+    Tag: "customer channel 5"
+    Type: "temperature"
+  6: 
+    Tag: "customer channel 6"
+    Type: "temperature"
+  7: 
+    Tag: "customer channel 7"
+    Type: "temperature"
+  8: 
+    Tag: "customer channel 8"
+    Type: "temperature"
+  9: 
+    Tag: "customer channel 9"
+    Type: "temperature"
+  10: 
+    Tag: "customer channel 10"
+    Type: "temperature"
+  11: 
+    Tag: "customer channel 11"
+    Type: "temperature"
+  12: 
+    Tag: "customer channel 12"
+    Type: "temperature"
+  13: 
+    Tag: "customer channel 13"
+    Type: "temperature"
+  14: 
+    Tag: "customer channel 14"
+    Type: "temperature"
+  15: 
+    Tag: "customer channel 15"
+    Type: "temperature"
+  16: 
+    Tag: "customer channel 16"
+    Type: "temperature"
+  17: 
+    Tag: "customer channel 17"
+    Type: "temperature"
+  18: 
+    Tag: "customer channel 18"
+    Type: "temperature"
+  19: 
+    Tag: "customer channel 19"
+    Type: "temperature"
+  20: 
+    Tag: "customer channel 20"
+    Type: "temperature"
+  81: 
+    Tag: "CustomerSup - Voltage"
+    Type: "voltage"
+  82: 
+    Tag: "Coupon#2 - Voltage"
+    Type: "voltage"
+  83: 
+    Tag: "Coupon#3 - Voltage"
+    Type: "voltage"
+  84: 
+    Tag: "Coupon#4 - Voltage"
+    Type: "voltage"
+  85: 
+    Tag: "Coupon#5 - Voltage"
+    Type: "voltage"
+  86: 
+    Tag: "Coupon#6 - Voltage"
+    Type: "voltage"
+  87: 
+    Tag: "Coupon#7 - Voltage"
+    Type: "voltage"
+  88: 
+    Tag: "Coupon#8 - Voltage"
+    Type: "voltage"
+  89: 
+    Tag: "Coupon#9 - Voltage"
+    Type: "voltage"
+  90: 
+    Tag: "Coupon#10 - Voltage"
+    Type: "voltage"
+  91: 
+    Tag: "Coupon#11 - Voltage"
+    Type: "voltage"
+  92: 
+    Tag: "Coupon#12 - Voltage"
+    Type: "voltage"
+  93: 
+    Tag: "Coupon#13 - Voltage"
+    Type: "voltage"
+  94: 
+    Tag: "Coupon#14 - Voltage"
+    Type: "voltage"
+  95: 
+    Tag: "Coupon#1 - Voltage"
+    Type: "voltage"
+  122: 
+    Tag: "Pressure_Test"
+    Type: "pressure"
+  123: 
+    Tag: "Coupon#2 - Current"
+    Type: "current"
+  124: 
+    Tag: "Coupon#3 - Current"
+    Type: "current"
+  125: 
+    Tag: "Coupon#4 - Current"
+    Type: "current"
+  126: 
+    Tag: "Coupon#5 - Current"
+    Type: "current"
+  127: 
+    Tag: "Coupon#6 - Current"
+    Type: "current"
+  128: 
+    Tag: "Coupon#7 - Current"
+    Type: "current"
+  129: 
+    Tag: "Coupon#8 - Current"
+    Type: "current"
+  130: 
+    Tag: "Coupon#9 - Current"
+    Type: "current"
+  131: 
+    Tag: "Coupon#10 - Current"
+    Type: "current"
+  132: 
+    Tag: "Coupon#11 - Current"
+    Type: "current"
+  133: 
+    Tag: "Coupon#12 - Current"
+    Type: "current"
+  134: 
+    Tag: "Coupon#13 - Current"
+    Type: "current"
+  135: 
+    Tag: "Coupon#14 - Current"
+    Type: "current"
+  136: 
+    Tag: "Coupon#1 - Current"
+    Type: "current"
