@@ -28,20 +28,17 @@ type Tag struct {
 }
 
 var (
-	pluginName                                    = "fluke-plugin"
-	pluginVersion                                 = "1.0.0"
-	laniVersionConstraint                         = ">= 0.2.0"
-	TelemetryDefaultPollingInterval int64         = 10
-	MinTelemetryPollingInterval     int64         = 5
-	TelemetryPressureChannel        int64         = 81
-	flukeOPCServerName                            = "Fluke.DAQ.OPC"
-	flukeOPCServerHost                            = "localhost"
-	defaultPolInterval              time.Duration = 5 * time.Second
-	ErrAlreadyRecording                           = bg.Error("already recording")
-	ErrAlreadyStoppedRecording                    = bg.Error("already stopped recording")
-	ErrBlankInfluxOrgOrBucket                     = bg.Error("influx organization or bucket cannot be blank")
-	ErrInvalidOrg                                 = bg.Error("invalid influx organization")
-	ErrInvalidBucket                              = bg.Error("invalid influx bucket")
+	pluginName                               = "fluke-plugin"
+	pluginVersion                            = "1.0.0"
+	laniVersionConstraint                    = ">= 0.2.0"
+	flukeOPCServerName                       = "Fluke.DAQ.OPC"
+	flukeOPCServerHost                       = "localhost"
+	defaultPolInterval         time.Duration = 5 * time.Second
+	ErrAlreadyRecording                      = bg.Error("already recording")
+	ErrAlreadyStoppedRecording               = bg.Error("already stopped recording")
+	ErrBlankInfluxOrgOrBucket                = bg.Error("influx organization or bucket cannot be blank")
+	ErrInvalidOrg                            = bg.Error("invalid influx organization")
+	ErrInvalidBucket                         = bg.Error("invalid influx bucket")
 )
 
 type DAQConnection struct {
