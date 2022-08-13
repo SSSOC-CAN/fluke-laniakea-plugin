@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"sort"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/SSSOC-CAN/fluke-laniakea-plugin/cfg"
 	sdk "github.com/SSSOC-CAN/laniakea-plugin-sdk"
 	"github.com/SSSOC-CAN/laniakea-plugin-sdk/proto"
 	bg "github.com/SSSOCPaulCote/blunderguard"
@@ -22,157 +22,16 @@ type Tag struct {
 }
 
 var (
-	pluginName                            = "fluke-plugin"
-	pluginVersion                         = "1.0.0"
-	laniVersionConstraint                 = ">= 0.2.0"
-	TelemetryDefaultPollingInterval int64 = 10
-	MinTelemetryPollingInterval     int64 = 5
-	TelemetryPressureChannel        int64 = 81
-	flukeOPCServerName                    = "Fluke.DAQ.OPC"
-	flukeOPCServerHost                    = "localhost"
-	customerChannelString                 = "customer channel "
-	coldfingerSup                         = "Coldfinger sup"
-	coldfingerRet                         = "Coldfinger ret"
-	coldfingerFin                         = "Coldfinger fin"
-	platenIn                              = "Platen_TTin"
-	platenOut                             = "Platen_TTout"
-	couponString                          = "Coupon#"
-	customerSupply                        = "CustomerSup"
-	voltageString                         = "Voltage"
-	rearShroudSupStr                      = "Rear Shroud (R.S. Supply)"
-	rearShroudUpStr                       = "Rear Shroud (R.S. Upright)"
-	rearShroudRetStr                      = "Rear Shroud (R.S. Return)"
-	coldfingerStr                         = "Coldfinger"
-	platenLeftRearStr                     = "Platen (L.S. Rear)"
-	platenLeftFrontStr                    = "Platen (L.S. Front)"
-	platenRightFrontStr                   = "Platen (R.S. Front)"
-	platenRightRearStr                    = "Platen (R.S. Rear)"
-	platenRetStr                          = "Platen (Return S-bend)"
-	mainSupRearStr                        = "Main (Supply man Rear)"
-	mainSupFrontStr                       = "Main (Supply man Front)"
-	mainRetFrontStr                       = "Main (Return man Front)"
-	mainRetRearStr                        = "Main (Return man Rear)"
-	frontDoorSupStr                       = "Front Door (D.S. Supply)"
-	frontDoorRetStr                       = "Front Door (D.S. Return)"
-	frontDoorSkinStr                      = "Front Door Skin"
-	rearSkinStr                           = "Rear Skin (bell)"
-	mainShroudRearStr                     = "Rear of Main Shroud"
-	mainShroudFrontStr                    = "Front of Main Shroud"
-	platenSupStr                          = "Platen (Supply S-bend)"
-	computedOne                           = "CustSup_Current"
-	pressureStr                           = "Pressure_Test"
-	defaultTagMap                         = func(tags []string) map[int]Tag {
-		tagMap := make(map[int]Tag)
-		for i, t := range tags {
-			var str string
-			switch {
-			case i == 0:
-				str = "Scan"
-			case i < 41 && i > 0: // first 40 channels are customer channels
-
-				str = customerChannelString + strconv.Itoa(i)
-			case i == 43:
-
-				str = coldfingerSup
-			case i == 44:
-
-				str = coldfingerRet
-			case i == 45:
-
-				str = coldfingerFin
-			case i == 66:
-
-				str = platenIn
-			case i == 67:
-
-				str = platenOut
-			case i == 81:
-
-				str = customerSupply + " - " + voltageString
-			case i < 95 && i > 81:
-
-				str = couponString + strconv.Itoa(i-80) + " - " + voltageString
-			case i == 95:
-
-				str = couponString + strconv.Itoa(1) + " - " + voltageString
-			case i == 101:
-
-				str = rearShroudSupStr
-			case i == 102:
-
-				str = rearShroudUpStr
-			case i == 103:
-
-				str = rearShroudRetStr
-			case i == 104:
-
-				str = coldfingerStr
-			case i == 105:
-
-				str = platenLeftRearStr
-			case i == 106:
-
-				str = platenLeftFrontStr
-			case i == 107:
-
-				str = platenRightFrontStr
-			case i == 108:
-
-				str = platenRightRearStr
-			case i == 109:
-
-				str = platenRetStr
-			case i == 110:
-
-				str = mainSupRearStr
-			case i == 111:
-
-				str = mainSupFrontStr
-			case i == 112:
-
-				str = mainRetFrontStr
-			case i == 113:
-
-				str = mainRetRearStr
-			case i == 114:
-
-				str = frontDoorSupStr
-			case i == 115:
-
-				str = frontDoorRetStr
-			case i == 116:
-
-				str = frontDoorSkinStr
-			case i == 117:
-
-				str = rearSkinStr
-			case i == 118:
-
-				str = mainShroudRearStr
-			case i == 119:
-
-				str = mainShroudFrontStr
-			case i == 120:
-
-				str = platenSupStr
-			case i == 121:
-
-				str = computedOne
-			case i == 122:
-
-				str = pressureStr
-			case i > 122 && i < 136:
-
-				str = couponString + strconv.Itoa(i-121) + " - Current"
-			case i == 136:
-				str = couponString + strconv.Itoa(1) + " - Current"
-			}
-			if str != "" {
-				tagMap[i] = Tag{name: str, tag: t}
-			}
-		}
-		return tagMap
-	}
+	pluginName                                    = "fluke-plugin"
+	pluginVersion                                 = "1.0.0"
+	laniVersionConstraint                         = ">= 0.2.0"
+	TelemetryDefaultPollingInterval int64         = 10
+	MinTelemetryPollingInterval     int64         = 5
+	TelemetryPressureChannel        int64         = 81
+	flukeOPCServerName                            = "Fluke.DAQ.OPC"
+	flukeOPCServerHost                            = "localhost"
+	defaultPolInterval              time.Duration = 5 * time.Second
+	ErrAlreadyRecording                           = bg.Error("already recording")
 )
 
 type DAQConnection struct {
@@ -193,8 +52,17 @@ func GetAllTags() ([]string, error) {
 	return opc.CollectTags(b), nil
 }
 
+// createTagMap takes the tag map given in the config file and creates a proper tag map from it
+func createTagMap(tags []string, cfgTagMap map[int]string) map[int]Tag {
+	tagMap := make(map[int]Tag)
+	for i, str := range cfgTagMap {
+		tagMap[i] = Tag{name: str, tag: tags[i]}
+	}
+	return tagMap
+}
+
 // ConnectToDAQ establishes a connection with the OPC server of the Fluke DAQ software and the FMTD
-func ConnectToDAQ() (*DAQConnection, error) {
+func ConnectToDAQ(cfgTags map[int]string) (*DAQConnection, error) {
 	tags, err := GetAllTags()
 	if err != nil {
 		return nil, err
@@ -210,7 +78,7 @@ func ConnectToDAQ() (*DAQConnection, error) {
 	return &DAQConnection{
 		Connection: c,
 		Tags:       tags,
-		TagMap:     defaultTagMap(tags),
+		TagMap:     createTagMap(tags, cfgTags),
 	}, nil
 }
 
@@ -277,6 +145,7 @@ type FlukeDatasource struct {
 	recording  int32 // used atomically
 	quitChan   chan struct{}
 	connection *DAQConnection
+	config     *cfg.Config
 	sync.WaitGroup
 }
 
@@ -291,11 +160,6 @@ type Frame struct {
 
 // Compile time check to ensure DemoDatasource satisfies the Datasource interface
 var _ sdk.Datasource = (*FlukeDatasource)(nil)
-
-var (
-	defaultPolInterval  time.Duration = 5 * time.Second
-	ErrAlreadyRecording               = bg.Error("already recording")
-)
 
 // Implements the Datasource interface funciton StartRecord
 func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
@@ -367,12 +231,17 @@ func (e *FlukeDatasource) Stop() error {
 }
 
 func main() {
-	conn, err := ConnectToDAQ()
+	config, err := cfg.InitConfig()
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	impl := &FlukeDatasource{quitChan: make(chan struct{}), connection: conn}
+	conn, err := ConnectToDAQ(config.FlukeTags)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	impl := &FlukeDatasource{quitChan: make(chan struct{}), connection: conn, config: config}
 	impl.SetPluginVersion(pluginVersion)              // set the plugin version before serving
 	impl.SetVersionConstraints(laniVersionConstraint) // set required laniakea version before serving
 	plugin.Serve(&plugin.ServeConfig{
