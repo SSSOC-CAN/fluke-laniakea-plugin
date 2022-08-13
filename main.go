@@ -331,7 +331,7 @@ func main() {
 		if config.InfluxURL == "" || config.InfuxAPIToken == "" {
 			log.Println("Influx URL or API Token config parameters cannot be blank")
 		}
-		impl.client = influx.NewClientWithOptions(config.InfluxURL, config.InfuxAPIToken, influx.DefaultOptions().SetTLSConfig(&tls.Config{InsecureSkipVerify: true}))
+		impl.client = influx.NewClientWithOptions(config.InfluxURL, config.InfuxAPIToken, influx.DefaultOptions().SetTLSConfig(&tls.Config{InsecureSkipVerify: config.InfluxSkipTLS}))
 	}
 	impl.SetPluginVersion(pluginVersion)              // set the plugin version before serving
 	impl.SetVersionConstraints(laniVersionConstraint) // set required laniakea version before serving

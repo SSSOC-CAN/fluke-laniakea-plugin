@@ -3,6 +3,7 @@ InfluxURL: "http://127.0.0.1:8086"
 InfluxAPIToken: "influx-api-token"
 InfluxOrgName: "my_influx_org"
 InfluxBucketName: "some_bucket"
+InfluxSkipTLS: False
 FlukeTags:
   0: 
     Tag: "Scan"

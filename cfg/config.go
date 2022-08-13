@@ -19,6 +19,7 @@ type Config struct {
 	InfuxAPIToken    string         `yaml:"InfluxAPIToken"`
 	InfluxOrgName    string         `yaml:"InfluxOrgName"`
 	InfluxBucketName string         `yaml:"InfluxBucketName"`
+	InfluxSkipTLS    bool           `yaml:"InfluxSkipTLS"`
 	FlukeTags        map[int]CfgTag `yaml:"FlukeTags"`
 }
 

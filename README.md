@@ -9,4 +9,4 @@ An example configuration file can be found in the main repository `fluke.yaml.ex
 - [X] Create influx bool config parameter for writing to influx db
 - [X] Create influx URL and API token config parameters
 - [X] Integrate influx writing
-- [ ] Add SkipTLSVerify config parameter for influx writing
+- [X] Add SkipTLSVerify config parameter for influx writing
