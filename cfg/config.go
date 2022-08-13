@@ -2,9 +2,9 @@ package cfg
 
 import (
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
+	"github.com/btcsuite/btcd/btcutil"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -30,13 +30,8 @@ var (
 
 // InitConfig initializes the config from the config YAML file
 func InitConfig() (*Config, error) {
-	// use current working directory to try and find config file
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	// open the config file
-	cfgBytes, err := ioutil.ReadFile(filepath.Join(cwd, configFileName))
+	// Use lani appdata dir for Fluke plugin config
+	cfgBytes, err := ioutil.ReadFile(filepath.Join(btcutil.AppDataDir("fmtd", false), configFileName))
 	if err != nil {
 		return nil, err
 	}
