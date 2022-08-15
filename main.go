@@ -249,7 +249,7 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 									current_time,
 								)
 								// write asynchronously
-								writer.WritePoint(p)
+								writeAPI.WritePoint(p)
 							}
 						}
 					case float32:
@@ -267,7 +267,7 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 									current_time,
 								)
 								// write asynchronously
-								writer.WritePoint(p)
+								writeAPI.WritePoint(p)
 							}
 						}
 					}
