@@ -192,7 +192,7 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 					case float64:
 						data = append(data, Payload{Name: reading.Name, Value: v})
 					case float32:
-						data = append(data, Payload{Name: reading.Name, Value: v})
+						data = append(data, Payload{Name: reading.Name, Value: float64(v)})
 					}
 				}
 				df.Data = data[:]
