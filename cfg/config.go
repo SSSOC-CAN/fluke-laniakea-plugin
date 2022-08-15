@@ -8,11 +8,18 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type CfgTag struct {
+	Tag  string `yaml:"Tag"`
+	Type string `yaml:"Type"`
+}
+
 type Config struct {
-	Influx        bool           `yaml:"Influx"`
-	InfluxURL     string         `yaml:"InfluxURL"`
-	InfuxAPIToken string         `yaml:"InfluxAPIToken"`
-	FlukeTags     map[int]string `yaml:"FlukeTags"`
+	Influx           bool           `yaml:"Influx"`
+	InfluxURL        string         `yaml:"InfluxURL"`
+	InfuxAPIToken    string         `yaml:"InfluxAPIToken"`
+	InfluxOrgName    string         `yaml:"InfluxOrgName"`
+	InfluxBucketName string         `yaml:"InfluxBucketName"`
+	FlukeTags        map[int]CfgTag `yaml:"FlukeTags"`
 }
 
 var (

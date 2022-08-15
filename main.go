@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"log"
 	"sort"
@@ -13,12 +15,16 @@ import (
 	"github.com/SSSOC-CAN/laniakea-plugin-sdk/proto"
 	bg "github.com/SSSOCPaulCote/blunderguard"
 	"github.com/hashicorp/go-plugin"
+	influx "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"github.com/konimarti/opc"
 )
 
 type Tag struct {
-	name string
-	tag  string
+	name    string
+	tag     string
+	tagType string
 }
 
 var (
@@ -33,6 +39,9 @@ var (
 	defaultPolInterval              time.Duration = 5 * time.Second
 	ErrAlreadyRecording                           = bg.Error("already recording")
 	ErrAlreadyStoppedRecording                    = bg.Error("already stopped recording")
+	ErrBlankInfluxOrgOrBucket                     = bg.Error("influx organization or bucket cannot be blank")
+	ErrInvalidOrg                                 = bg.Error("invalid influx organization")
+	ErrInvalidBucket                              = bg.Error("invalid influx bucket")
 )
 
 type DAQConnection struct {
@@ -54,16 +63,16 @@ func GetAllTags() ([]string, error) {
 }
 
 // createTagMap takes the tag map given in the config file and creates a proper tag map from it
-func createTagMap(tags []string, cfgTagMap map[int]string) map[int]Tag {
+func createTagMap(tags []string, cfgTagMap map[int]cfg.CfgTag) map[int]Tag {
 	tagMap := make(map[int]Tag)
-	for i, str := range cfgTagMap {
-		tagMap[i] = Tag{name: str, tag: tags[i]}
+	for i, cfgTag := range cfgTagMap {
+		tagMap[i] = Tag{name: cfgTag.Tag, tag: tags[i], tagType: cfgTag.Type}
 	}
 	return tagMap
 }
 
 // ConnectToDAQ establishes a connection with the OPC server of the Fluke DAQ software and the FMTD
-func ConnectToDAQ(cfgTags map[int]string) (*DAQConnection, error) {
+func ConnectToDAQ(cfgTags map[int]cfg.CfgTag) (*DAQConnection, error) {
 	tags, err := GetAllTags()
 	if err != nil {
 		return nil, err
@@ -120,6 +129,7 @@ func (d *DAQConnection) GetTagMapNames() []string {
 type Reading struct {
 	Item opc.Item
 	Name string
+	Type string
 }
 
 // ReadItems returns a slice of all readings
@@ -135,6 +145,7 @@ func (d *DAQConnection) ReadItems() []Reading {
 			readings = append(readings, Reading{
 				Item: d.ReadItem(d.TagMap[i].tag),
 				Name: d.TagMap[i].name,
+				Type: d.TagMap[i].tagType,
 			})
 		}
 	}
@@ -147,6 +158,7 @@ type FlukeDatasource struct {
 	quitChan   chan struct{}
 	connection *DAQConnection
 	config     *cfg.Config
+	client     influx.Client
 	sync.WaitGroup
 }
 
@@ -174,6 +186,37 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 	}
 	ticker := time.NewTicker(defaultPolInterval)
 	frameChan := make(chan *proto.Frame)
+	var writeAPI api.WriteAPI
+	if e.config.Influx {
+		if e.config.InfluxOrgName == "" || e.config.InfluxBucketName == "" {
+			return nil, ErrBlankInfluxOrgOrBucket
+		}
+		orgAPI := e.client.OrganizationsAPI()
+		org, err := orgAPI.FindOrganizationByName(context.Background(), e.config.InfluxOrgName)
+		if err != nil {
+			return nil, ErrInvalidOrg
+		}
+		bucketAPI := e.client.BucketsAPI()
+		buckets, err := bucketAPI.FindBucketsByOrgName(context.Background(), e.config.InfluxOrgName)
+		if err != nil {
+			return nil, ErrInvalidOrg
+		}
+		var found bool
+		for _, bucket := range *buckets {
+			if bucket.Name == e.config.InfluxBucketName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("Creating %s bucket...", e.config.InfluxBucketName)
+			_, err := bucketAPI.CreateBucketWithName(context.Background(), org, e.config.InfluxBucketName, domain.RetentionRule{EverySeconds: 0})
+			if err != nil {
+				return nil, err
+			}
+		}
+		writeAPI = e.client.WriteAPI(e.config.InfluxOrgName, e.config.InfluxBucketName)
+	}
 	if ok := atomic.CompareAndSwapInt32(&e.recording, 0, 1); !ok {
 		return nil, ErrAlreadyRecording
 	}
@@ -188,12 +231,45 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 				data := []Payload{}
 				df := Frame{}
 				readings := e.connection.ReadItems()
+				current_time := time.Now()
 				for _, reading := range readings {
 					switch v := reading.Item.Value.(type) {
 					case float64:
 						data = append(data, Payload{Name: reading.Name, Value: v})
+						if e.config.Influx {
+							if reading.Type != "ignore" {
+								p := influx.NewPoint(
+									reading.Type,
+									map[string]string{
+										"id": reading.Name,
+									},
+									map[string]interface{}{
+										reading.Type: v,
+									},
+									current_time,
+								)
+								// write asynchronously
+								writer.WritePoint(p)
+							}
+						}
 					case float32:
 						data = append(data, Payload{Name: reading.Name, Value: float64(v)})
+						if e.config.Influx {
+							if reading.Type != "ignore" {
+								p := influx.NewPoint(
+									reading.Type,
+									map[string]string{
+										"id": reading.Name,
+									},
+									map[string]interface{}{
+										reading.Type: float64(v),
+									},
+									current_time,
+								)
+								// write asynchronously
+								writer.WritePoint(p)
+							}
+						}
 					}
 				}
 				df.Data = data[:]
@@ -206,7 +282,7 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 				frameChan <- &proto.Frame{
 					Source:    pluginName,
 					Type:      "application/json",
-					Timestamp: time.Now().UnixMilli(),
+					Timestamp: current_time.UnixMilli(),
 					Payload:   b,
 				}
 			case <-e.quitChan:
@@ -214,6 +290,10 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 				err := e.connection.StopScanning()
 				if err != nil {
 					log.Println(err)
+				}
+				if e.config.Influx {
+					writeAPI.Flush()
+					e.client.Close()
 				}
 				return
 			}
@@ -250,6 +330,12 @@ func main() {
 		return
 	}
 	impl := &FlukeDatasource{quitChan: make(chan struct{}), connection: conn, config: config}
+	if config.Influx {
+		if config.InfluxURL == "" || config.InfuxAPIToken == "" {
+			log.Println("Influx URL or API Token config parameters cannot be blank")
+		}
+		impl.client = influx.NewClientWithOptions(config.InfluxURL, config.InfuxAPIToken, influx.DefaultOptions().SetTLSConfig(&tls.Config{InsecureSkipVerify: true}))
+	}
 	impl.SetPluginVersion(pluginVersion)              // set the plugin version before serving
 	impl.SetVersionConstraints(laniVersionConstraint) // set required laniakea version before serving
 	plugin.Serve(&plugin.ServeConfig{
