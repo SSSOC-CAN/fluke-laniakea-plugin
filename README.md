@@ -6,7 +6,7 @@ a laniakea datasource plugin for reading data from a Fluke DAQ. This plugin allo
 - Access the data via the Laniakea Subscribe API
 - Granular authenticate access to the plugin
 
-An example configuration file can be found in the main repository `fluke.yaml.example`
+An example configuration file can be found in the main repository `fluke.yaml.example`. Configuration files for the plugin must be in the current working directory where Laniakea is run. This will likely change in the future to be a better location (like .lani)
 
 # TODO
 - [X] Have plugin read config file
@@ -15,3 +15,4 @@ An example configuration file can be found in the main repository `fluke.yaml.ex
 - [X] Create influx URL and API token config parameters
 - [X] Integrate influx writing
 - [X] Add SkipTLSVerify config parameter for influx writing
+- [ ] Change location of plugin config file
