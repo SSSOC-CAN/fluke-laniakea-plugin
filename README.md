@@ -1,7 +1,12 @@
 # fluke-laniakea-plugin
-a laniakea datasource plugin for reading data from a Fluke DAQ
+a laniakea datasource plugin for reading data from a Fluke DAQ. This plugin allows the user to:
+- Specify channel names, numbers and their type (which will appear accordingly in Influx)
+- Writing data to influx
+- A predetermined polling interval (Influx writes are blocking and may exceed the interval)
+- Access the data via the Laniakea Subscribe API
+- Granular authenticate access to the plugin
 
-An example configuration file can be found in the main repository `fluke.yaml.example`
+An example configuration file can be found in the main repository `fluke.yaml.example`. Configuration files for the plugin must be in standard .fmtd directory.
 
 # TODO
 - [X] Have plugin read config file
@@ -10,3 +15,4 @@ An example configuration file can be found in the main repository `fluke.yaml.ex
 - [X] Create influx URL and API token config parameters
 - [X] Integrate influx writing
 - [X] Add SkipTLSVerify config parameter for influx writing
+- [x] Change location of plugin config file

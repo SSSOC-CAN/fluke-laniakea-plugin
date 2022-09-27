@@ -226,6 +226,17 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 	go func() {
 		defer e.Done()
 		defer close(frameChan)
+		defer func() {
+			ticker.Stop()
+			err := e.connection.StopScanning()
+			if err != nil {
+				log.Println(err)
+			}
+			if e.config.Influx {
+				writeAPI.Flush()
+				e.client.Close()
+			}
+		}()
 		time.Sleep(1 * time.Second) // sleep for a second while laniakea sets up the plugin
 		for {
 			select {
@@ -288,15 +299,6 @@ func (e *FlukeDatasource) StartRecord() (chan *proto.Frame, error) {
 					Payload:   b,
 				}
 			case <-e.quitChan:
-				ticker.Stop()
-				err := e.connection.StopScanning()
-				if err != nil {
-					log.Println(err)
-				}
-				if e.config.Influx {
-					writeAPI.Flush()
-					e.client.Close()
-				}
 				return
 			}
 		}
